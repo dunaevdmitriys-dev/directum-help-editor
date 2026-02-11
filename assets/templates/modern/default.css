@@ -1,0 +1,492 @@
+/* ============================================================
+   Help Editor — Modern Template Styles (Directum RX)
+   Refined corporate aesthetic with distinctive detail
+   ============================================================ */
+
+:root {
+  /* Brand palette */
+  --rx-navy: #13406d;
+  --rx-navy-light: #1a5a96;
+  --rx-orange: #f57c00;
+  --rx-orange-hover: #e65100;
+
+  /* Semantic colors */
+  --color-link: #0b5faa;
+  --color-link-hover: #f57c00;
+  --color-text: #2d3748;
+  --color-text-light: #4a5568;
+  --color-text-muted: #718096;
+  --color-heading: #1a202c;
+
+  /* Surfaces */
+  --surface-page: #ffffff;
+  --surface-subtle: #f7fafc;
+  --surface-muted: #edf2f7;
+  --surface-accent: #ebf4ff;
+  --border-default: #e2e8f0;
+  --border-light: #edf2f7;
+
+  /* Spacing scale */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+
+  /* Typography */
+  --font-body: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'Cascadia Code', 'Fira Code', Consolas, 'Courier New', monospace;
+  --font-size-base: 15px;
+  --line-height: 1.65;
+
+  /* Radii */
+  --radius-s: 4px;
+  --radius-m: 6px;
+  --radius-l: 10px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height);
+  color: var(--color-text);
+  background: var(--surface-page);
+  margin: 0;
+  padding: var(--sp-6) var(--sp-8) var(--sp-10);
+  max-width: 920px;
+}
+
+/* === H&M header override — чистая шапка с хлебными крошками === */
+#idheader {
+  border-bottom: 1px solid var(--border-default) !important;
+  min-height: auto !important;
+  margin-bottom: var(--sp-4);
+}
+#idheader table {
+  min-height: auto !important;
+  background: transparent !important;
+}
+#idheader h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--rx-navy);
+  letter-spacing: -0.3px;
+  margin: var(--sp-4) 0 var(--sp-2) var(--sp-2) !important;
+  line-height: 1.3;
+}
+#idheaderbg {
+  min-height: auto !important;
+}
+
+/* === Типографика === */
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-body);
+  color: var(--color-heading);
+  font-weight: 600;
+  line-height: 1.3;
+  margin-top: 1.6em;
+  margin-bottom: 0.6em;
+}
+
+h1 {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--rx-navy);
+  padding-bottom: var(--sp-3);
+  border-bottom: 2px solid var(--rx-navy);
+  margin-top: var(--sp-6);
+  letter-spacing: -0.3px;
+}
+
+h2 {
+  font-size: 21px;
+  color: var(--rx-navy);
+  padding-bottom: var(--sp-2);
+  border-bottom: 1px solid var(--border-default);
+}
+
+h3 {
+  font-size: 17px;
+  color: var(--rx-navy-light);
+}
+
+h4 {
+  font-size: 15px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--color-text-light);
+}
+
+h5, h6 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-light);
+}
+
+p {
+  margin: 0 0 var(--sp-4);
+}
+
+/* === Ссылки === */
+
+a {
+  color: var(--color-link);
+  text-decoration: none;
+  transition: color 0.15s ease, border-color 0.15s ease;
+  border-bottom: 1px solid transparent;
+}
+
+a:hover {
+  color: var(--color-link-hover);
+  border-bottom-color: var(--color-link-hover);
+}
+
+/* === Списки === */
+
+ul, ol {
+  margin: 0 0 var(--sp-4);
+  padding-left: var(--sp-6);
+}
+
+li {
+  margin-bottom: var(--sp-1);
+}
+
+li > p { margin-bottom: var(--sp-2); }
+
+/* Вложенные списки */
+li > ul, li > ol {
+  margin-top: var(--sp-1);
+  margin-bottom: var(--sp-2);
+}
+
+/* === Таблицы === */
+
+.table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: var(--sp-5) 0;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-m);
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: var(--sp-4) 0;
+  font-size: 14px;
+}
+
+.table-wrapper table {
+  margin: 0;
+  border: none;
+}
+
+th, td {
+  padding: var(--sp-2) var(--sp-3);
+  text-align: left;
+  border-bottom: 1px solid var(--border-default);
+  vertical-align: top;
+}
+
+th {
+  background: var(--surface-subtle);
+  font-weight: 600;
+  color: var(--color-heading);
+  border-bottom-width: 2px;
+  border-bottom-color: var(--border-default);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr:nth-child(even) {
+  background: var(--surface-subtle);
+}
+
+tbody tr:hover {
+  background: var(--surface-accent);
+}
+
+/* H&M таблицы — часто используют border="1" и cellpadding */
+table[border] th, table[border] td {
+  border: 1px solid var(--border-default);
+}
+
+/* === Код === */
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  background: var(--surface-muted);
+  padding: 1px 5px;
+  border-radius: var(--radius-s);
+  color: #c7254e;
+  word-break: break-word;
+}
+
+pre {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.55;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-m);
+  padding: var(--sp-4) var(--sp-5);
+  margin: var(--sp-4) 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  tab-size: 4;
+}
+
+pre code {
+  padding: 0;
+  background: none;
+  color: inherit;
+  font-size: inherit;
+  border-radius: 0;
+}
+
+/* === Изображения === */
+
+img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-s);
+}
+
+/* Скриншоты — тонкая рамка + тень для реалистичности */
+p > img, .content img, td > img {
+  border: 1px solid var(--border-light);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  border-radius: var(--radius-s);
+}
+
+/* Маленькие иконки — без рамки */
+img[width], img[style*="width"] {
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+figure {
+  margin: var(--sp-5) 0;
+  text-align: center;
+}
+
+figure img {
+  display: inline-block;
+}
+
+figcaption {
+  margin-top: var(--sp-2);
+  font-size: 13px;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+/* === Видео === */
+
+video {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-m);
+  background: #000;
+}
+
+iframe {
+  max-width: 100%;
+}
+
+.video-container {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+  margin: var(--sp-4) 0;
+  border-radius: var(--radius-m);
+}
+
+.video-container iframe {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  border: none;
+}
+
+/* === Цитаты === */
+
+blockquote {
+  margin: var(--sp-5) 0;
+  padding: var(--sp-3) var(--sp-4);
+  border-left: 3px solid var(--rx-navy);
+  background: var(--surface-accent);
+  border-radius: 0 var(--radius-s) var(--radius-s) 0;
+  color: var(--color-text-light);
+}
+
+blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+/* === Разделитель === */
+
+hr {
+  border: none;
+  height: 1px;
+  background: var(--border-default);
+  margin: var(--sp-8) 0;
+}
+
+/* === Блоки примечаний (Note / Warning / Tip) === */
+
+.note, .warning, .tip {
+  padding: var(--sp-4) var(--sp-5);
+  border-radius: var(--radius-m);
+  margin: var(--sp-6) 0;
+  border-left: 4px solid;
+  position: relative;
+}
+
+.note::before, .warning::before, .tip::before {
+  display: block;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: var(--sp-2);
+}
+
+.note {
+  background: var(--surface-accent);
+  border-left-color: var(--color-link);
+}
+.note::before {
+  content: "Примечание";
+  color: var(--color-link);
+}
+
+.warning {
+  background: #fffbeb;
+  border-left-color: #d97706;
+}
+.warning::before {
+  content: "Внимание";
+  color: #d97706;
+}
+
+.tip {
+  background: #ecfdf5;
+  border-left-color: #059669;
+}
+.tip::before {
+  content: "Совет";
+  color: #059669;
+}
+
+/* === Выделение подсвеченных фрагментов (H&M highlight) === */
+
+span.highlight {
+  background-color: #fef3cd !important;
+  padding: 1px 3px;
+  border-radius: 2px;
+}
+
+/* === Якорь — подсветка при переходе === */
+
+:target {
+  animation: target-glow 2.5s ease;
+}
+
+@keyframes target-glow {
+  0% { background: #fef3cd; box-shadow: 0 0 0 4px #fef3cd; }
+  100% { background: transparent; box-shadow: none; }
+}
+
+/* === Кнопка "Наверх" === */
+
+.scroll-to-top {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--rx-navy);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+  transform: translateY(8px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  z-index: 100;
+}
+
+.scroll-to-top.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.scroll-to-top:hover {
+  background: var(--rx-orange);
+}
+
+/* === Адаптивность === */
+
+@media (max-width: 768px) {
+  body {
+    padding: var(--sp-4);
+    font-size: 14px;
+  }
+  h1 { font-size: 22px; margin-top: var(--sp-4); }
+  h2 { font-size: 19px; }
+  h3 { font-size: 16px; }
+  #idheader h1 { font-size: 20px; }
+  table { font-size: 13px; }
+  th, td { padding: var(--sp-2); }
+}
+
+/* === Печать === */
+
+@media print {
+  body {
+    max-width: 100%;
+    padding: 0;
+    color: #000;
+    font-size: 12pt;
+  }
+  a { color: #000; text-decoration: underline; }
+  a[href]::after { content: " (" attr(href) ")"; font-size: 0.85em; color: #666; }
+  a[href^="#"]::after, a[href^="javascript"]::after { content: none; }
+  pre, code { border: 1px solid #ccc; }
+  .note, .warning, .tip { border: 1px solid #ccc; break-inside: avoid; }
+  h1, h2, h3 { break-after: avoid; color: #000; border-color: #000; }
+  img { max-width: 100%; break-inside: avoid; }
+  .scroll-to-top { display: none; }
+  #idheader { border-bottom-color: #000 !important; }
+}

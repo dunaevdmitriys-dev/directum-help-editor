@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <title>Справка</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --rx-navy: #13406d;
+      --rx-navy-dark: #0d2e4d;
+      --rx-orange: #f57c00;
+      --sidebar-w: 300px;
+      --header-h: 48px;
+      --border: #e2e8f0;
+      --surface: #f7fafc;
+      --font: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; overflow: hidden; font-family: var(--font); }
+
+    /* === Top Header Bar === */
+    .help-header {
+      height: var(--header-h);
+      background: var(--rx-navy);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 12px;
+      z-index: 100;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    }
+
+    .help-header .logo-link {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .help-header .logo-link img {
+      height: 24px;
+      width: auto;
+      filter: brightness(0) invert(1);
+    }
+    .help-header .header-title {
+      color: rgba(255,255,255,0.95);
+      font-size: 15px;
+      font-weight: 600;
+      white-space: nowrap;
+      letter-spacing: 0.2px;
+    }
+
+    .header-spacer { flex: 1; }
+
+    /* Поиск в шапке */
+    .header-search {
+      position: relative;
+      max-width: 280px;
+      flex: 1;
+    }
+    .header-search input {
+      width: 100%;
+      padding: 6px 12px 6px 32px;
+      border: none;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      font-size: 13px;
+      font-family: var(--font);
+      outline: none;
+      transition: background 0.2s;
+    }
+    .header-search input::placeholder { color: rgba(255,255,255,0.55); }
+    .header-search input:focus { background: rgba(255,255,255,0.25); }
+    .header-search-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 14px;
+      height: 14px;
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    /* Кнопка меню (мобильная) */
+    .menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.8);
+      font-size: 22px;
+      cursor: pointer;
+      padding: 4px;
+      line-height: 1;
+    }
+    .menu-toggle:hover { color: #fff; }
+
+    /* === Layout === */
+    .help-body {
+      display: flex;
+      height: calc(100% - var(--header-h));
+    }
+
+    /* === Sidebar === */
+    .help-sidebar {
+      width: var(--sidebar-w);
+      min-width: 220px;
+      max-width: 450px;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      background: var(--surface);
+      position: relative;
+      transition: width 0.25s ease, min-width 0.25s ease;
+    }
+
+    .toc-frame {
+      flex: 1;
+      border: none;
+      width: 100%;
+    }
+
+    /* Ресайзер */
+    .sidebar-resizer {
+      width: 4px;
+      cursor: col-resize;
+      background: transparent;
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      z-index: 5;
+      transition: background 0.15s;
+    }
+    .sidebar-resizer:hover,
+    .sidebar-resizer.active {
+      background: var(--rx-orange);
+    }
+
+    /* Кнопка сворачивания */
+    .sidebar-collapse {
+      position: absolute;
+      right: -14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 14px;
+      height: 40px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: none;
+      border-radius: 0 4px 4px 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      color: #94a3b8;
+      font-size: 10px;
+      transition: color 0.15s, background 0.15s;
+    }
+    .sidebar-collapse:hover {
+      color: var(--rx-navy);
+      background: #e2e8f0;
+    }
+
+    .help-sidebar.collapsed {
+      width: 0 !important;
+      min-width: 0 !important;
+      border-right: none;
+      overflow: hidden;
+    }
+    .help-sidebar.collapsed .toc-frame { display: none; }
+    .help-sidebar.collapsed .sidebar-collapse { right: -14px; }
+
+    /* === Content === */
+    .help-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .content-frame {
+      flex: 1;
+      border: none;
+      width: 100%;
+      height: 100%;
+      background: #fff;
+    }
+
+    /* === Mobile === */
+    @media (max-width: 768px) {
+      .menu-toggle { display: block; }
+      .header-search { max-width: 180px; }
+      .help-sidebar {
+        position: fixed;
+        left: 0;
+        top: var(--header-h);
+        bottom: 0;
+        z-index: 200;
+        box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+        width: 280px !important;
+        min-width: 0 !important;
+        transform: translateX(0);
+        transition: transform 0.3s ease;
+      }
+      .help-sidebar.collapsed {
+        transform: translateX(-100%);
+        box-shadow: none;
+      }
+      .sidebar-collapse { display: none; }
+      .sidebar-resizer { display: none; }
+
+      /* Overlay */
+      .mobile-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        top: var(--header-h);
+        background: rgba(0,0,0,0.3);
+        z-index: 199;
+      }
+      .mobile-overlay.visible { display: block; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="help-header">
+  <button class="menu-toggle" id="menuToggle" title="Меню">☰</button>
+  <a class="logo-link" id="logoLink" href="https://directum.ru" target="_blank" title="Directum">
+    <img id="logoImg" src="RXlogo_horizontal.svg" alt="Directum RX" onerror="this.style.display='none'">
+    <span class="header-title" id="headerTitle">Справка</span>
+  </a>
+  <div class="header-spacer"></div>
+  <div class="header-search">
+    <svg class="header-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="headerSearchInput" placeholder="Поиск по справке…" autocomplete="off">
+  </div>
+</div>
+
+<!-- Body -->
+<div class="help-body">
+  <div class="help-sidebar" id="sidebar">
+    <iframe src="hmcontent.htm" class="toc-frame" name="hmtoc" id="tocFrame"></iframe>
+    <div class="sidebar-resizer" id="resizer"></div>
+    <button class="sidebar-collapse" id="sidebarCollapse" title="Свернуть навигацию">◂</button>
+  </div>
+
+  <div class="help-content">
+    <iframe src="" class="content-frame" name="hmcontent" id="contentFrame"></iframe>
+  </div>
+</div>
+
+<div class="mobile-overlay" id="mobileOverlay"></div>
+
+<script>
+(function() {
+  var sidebar = document.getElementById('sidebar');
+  var resizer = document.getElementById('resizer');
+  var collapse = document.getElementById('sidebarCollapse');
+  var contentFrame = document.getElementById('contentFrame');
+  var menuToggle = document.getElementById('menuToggle');
+  var overlay = document.getElementById('mobileOverlay');
+  var searchInput = document.getElementById('headerSearchInput');
+  var isMobile = function() { return window.innerWidth <= 768; };
+
+  // === Начальная страница ===
+  var params = window.location.search.substring(1);
+  if (params && params.endsWith('.htm')) {
+    contentFrame.src = params;
+  } else {
+    var contentLoaded = false;
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'tocFirstLink' && !contentLoaded) {
+        contentLoaded = true;
+        contentFrame.src = e.data.href;
+      }
+    });
+    var tocFrame = document.getElementById('tocFrame');
+    tocFrame.onload = function() {
+      if (contentLoaded) return;
+      try {
+        var firstLink = tocFrame.contentDocument.querySelector('#toc a[href]');
+        if (firstLink) {
+          contentLoaded = true;
+          contentFrame.src = firstLink.getAttribute('href');
+        }
+      } catch(e) {}
+    };
+  }
+
+  // === Ресайзер ===
+  var isResizing = false;
+  resizer.addEventListener('mousedown', function(e) {
+    isResizing = true;
+    resizer.classList.add('active');
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', function(e) {
+    if (!isResizing) return;
+    var w = e.clientX;
+    if (w >= 180 && w <= 500) {
+      sidebar.style.width = w + 'px';
+    }
+  });
+  document.addEventListener('mouseup', function() {
+    if (isResizing) {
+      isResizing = false;
+      resizer.classList.remove('active');
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+  });
+
+  // === Collapse/Expand ===
+  function toggleSidebar() {
+    sidebar.classList.toggle('collapsed');
+    var isCollapsed = sidebar.classList.contains('collapsed');
+    collapse.innerHTML = isCollapsed ? '▸' : '◂';
+    collapse.title = isCollapsed ? 'Показать навигацию' : 'Свернуть навигацию';
+    if (isMobile()) {
+      overlay.classList.toggle('visible', !isCollapsed);
+    }
+  }
+
+  collapse.addEventListener('click', toggleSidebar);
+
+  // === Mobile menu ===
+  if (isMobile()) { sidebar.classList.add('collapsed'); }
+  menuToggle.addEventListener('click', function() {
+    toggleSidebar();
+  });
+  overlay.addEventListener('click', function() {
+    sidebar.classList.add('collapsed');
+    overlay.classList.remove('visible');
+    collapse.innerHTML = '▸';
+  });
+
+  // === URL sync ===
+  contentFrame.addEventListener('load', function() {
+    try {
+      var src = contentFrame.contentWindow.location.href;
+      var fileName = src.split('/').pop().split('?')[0];
+      if (fileName && fileName.endsWith('.htm')) {
+        history.replaceState(null, '', '?' + fileName);
+      }
+      // Обновляем title
+      var pageTitle = contentFrame.contentDocument.title;
+      if (pageTitle) {
+        document.title = pageTitle + ' — Справка';
+      }
+    } catch(e) {}
+    // На мобильных — закрыть sidebar при навигации
+    if (isMobile() && !sidebar.classList.contains('collapsed')) {
+      sidebar.classList.add('collapsed');
+      overlay.classList.remove('visible');
+      collapse.innerHTML = '▸';
+    }
+  });
+
+  // === Поиск — переход на hmftsearch.htm ===
+  searchInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && searchInput.value.trim()) {
+      contentFrame.src = 'hmftsearch.htm?q=' + encodeURIComponent(searchInput.value.trim());
+    }
+  });
+
+  // === Keyboard shortcut: Ctrl+K → фокус на поиск ===
+  document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault();
+      searchInput.focus();
+      searchInput.select();
+    }
+  });
+})();
+</script>
+
+</body>
+</html>

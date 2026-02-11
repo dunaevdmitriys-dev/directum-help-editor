@@ -1,0 +1,66 @@
+/* Custom styles - add your project-specific styles here */
+
+/* Клиентский поиск (sidebar inline search) */
+.help-search-container {
+  padding: 10px;
+  border-bottom: 1px solid var(--border-default, #e2e8f0);
+  background: var(--surface-subtle, #f7fafc);
+  position: relative;
+}
+
+.help-search-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-default, #e2e8f0);
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: inherit;
+  box-sizing: border-box;
+  color: var(--color-text, #2d3748);
+  transition: border-color 0.15s;
+}
+
+.help-search-input:focus {
+  outline: none;
+  border-color: #13406d;
+  box-shadow: 0 0 0 2px rgba(19, 64, 109, 0.08);
+}
+
+.help-search-results {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 10px;
+  right: 10px;
+  background: #fff;
+  border: 1px solid var(--border-default, #e2e8f0);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.search-result-link {
+  display: block;
+  padding: 10px 12px;
+  color: var(--color-text, #2d3748);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border-light, #edf2f7);
+  transition: background 0.1s;
+}
+
+.search-result-link:last-child {
+  border-bottom: none;
+}
+
+.search-result-link:hover {
+  background: var(--surface-accent, #ebf4ff);
+}
+
+.search-no-results {
+  padding: 12px;
+  color: var(--color-text-muted, #718096);
+  text-align: center;
+  font-size: 13px;
+}

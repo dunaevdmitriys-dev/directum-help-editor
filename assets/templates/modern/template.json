@@ -1,0 +1,23 @@
+{
+  "id": "modern",
+  "name": "Современный",
+  "description": "Новая оболочка с боковой панелью, современный поиск (MiniSearch), стили Directum RX",
+  "shell": [
+    "index.html",
+    "hmftsearch.htm",
+    "scrollbars.css"
+  ],
+  "styles": [
+    "default.css"
+  ],
+  "scripts": [
+    "search-client.js",
+    "helpman_topicinit.js",
+    "helpman_settings.js"
+  ],
+  "search": {
+    "engine": "minisearch",
+    "generateIndex": true,
+    "pageInitScript": "helpman_topicinit.js"
+  }
+}

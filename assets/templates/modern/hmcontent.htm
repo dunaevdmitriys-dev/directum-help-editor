@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{HELP_TITLE}}</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link type="text/css" href="default.css" rel="stylesheet" />
+  <link type="text/css" href="scrollbars.css" rel="stylesheet" />
+
+  <style type="text/css">
+    :root {
+      --toc-text: #2d3748;
+      --toc-text-light: #4a5568;
+      --toc-accent: #13406d;
+      --toc-hover: #edf2f7;
+      --toc-active: #ebf4ff;
+      --toc-active-border: #3b82f6;
+      --toc-line: #e2e8f0;
+      --toc-chevron: #94a3b8;
+      --toc-chevron-open: #3b82f6;
+      --toc-dot: #cbd5e1;
+    }
+
+    body {
+      font-size: 13px;
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', Arial, sans-serif;
+      margin: 0;
+      padding: 10px 8px 10px 14px;
+      color: var(--toc-text);
+      background: transparent;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Heading/hilight классы */
+    .heading1, .heading2, .heading3,
+    .heading4, .heading5, .heading6 { color: var(--toc-text); text-decoration: none; }
+    .hilight1, .hilight2, .hilight3,
+    .hilight4, .hilight5, .hilight6 { color: var(--toc-accent); background: var(--toc-active); text-decoration: none; }
+
+    /* TOC структура */
+    #toc, #toc ul { list-style: none; margin: 0; padding: 0; }
+    #toc li { margin: 0; padding: 0; }
+
+    /* Ссылки */
+    #toc a {
+      display: block;
+      padding: 5px 8px 5px 6px;
+      border-radius: 4px;
+      color: var(--toc-text);
+      text-decoration: none;
+      font-size: 13px;
+      line-height: 1.45;
+      transition: background 0.12s ease, color 0.12s ease;
+      border-left: 2px solid transparent;
+    }
+    #toc a:hover {
+      background: var(--toc-hover);
+      color: var(--toc-accent);
+    }
+
+    /* Стрелка-chevron для папок */
+    #toc .toc-folder > a::before {
+      content: '';
+      display: inline-block;
+      width: 0; height: 0;
+      border-top: 4px solid transparent;
+      border-bottom: 4px solid transparent;
+      border-left: 5px solid var(--toc-chevron);
+      margin-right: 7px;
+      vertical-align: middle;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+      position: relative;
+      top: -1px;
+    }
+    #toc .toc-folder.expanded > a::before {
+      transform: rotate(90deg);
+      border-left-color: var(--toc-chevron-open);
+    }
+
+    /* Точка для страниц */
+    #toc .toc-page > a::before {
+      content: '';
+      display: inline-block;
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--toc-dot);
+      margin-right: 9px;
+      vertical-align: middle;
+      position: relative;
+      top: -1px;
+      transition: background 0.15s;
+    }
+    #toc .toc-page:hover > a::before {
+      background: var(--toc-chevron-open);
+    }
+
+    /* Вложенные уровни: вертикальная линия + отступ */
+    #toc .toc-folder > ul {
+      margin-left: 10px;
+      padding-left: 12px !important;
+      border-left: 1px solid var(--toc-line);
+    }
+
+    /* Анимация раскрытия */
+    #toc .toc-folder > ul {
+      overflow: hidden;
+    }
+
+    /* Уровень 1 — крупнее */
+    #toc > li > a {
+      font-weight: 600;
+      font-size: 13.5px;
+      padding: 6px 8px 6px 6px;
+      color: var(--toc-accent);
+    }
+
+    /* Вложенные уровни — компактнее */
+    #toc .toc-folder > ul a {
+      font-size: 13px;
+      padding: 4px 8px 4px 6px;
+    }
+
+    /* Активный раздел */
+    #toc .toc-active > a {
+      background: var(--toc-active);
+      border-left-color: var(--toc-active-border);
+      color: var(--toc-accent);
+      font-weight: 600;
+    }
+    #toc .toc-active > a::before {
+      background: var(--toc-active-border) !important;
+      border-left-color: var(--toc-active-border) !important;
+    }
+  </style>
+  <link type="text/css" href="custom.css" rel="stylesheet" />
+  <script type="text/javascript" src="helpman_settings.js"></script>
+  <script type="text/javascript">
+    // Раскрыть/свернуть только непосредственный уровень (не трогая вложенные)
+    function toggleNode(li, expand) {
+      var ul = li.querySelector(':scope > ul');
+      if (!ul) return;
+      if (expand) {
+        ul.style.display = 'block';
+        li.classList.add('expanded');
+      } else {
+        ul.style.display = 'none';
+        li.classList.remove('expanded');
+      }
+    }
+
+    // Свернуть всё дерево рекурсивно (все уровни)
+    function collapseAll() {
+      var folders = document.querySelectorAll('#toc .toc-folder');
+      for (var i = 0; i < folders.length; i++) {
+        toggleNode(folders[i], false);
+      }
+    }
+
+    // Развернуть всё дерево рекурсивно
+    function expandAll() {
+      var folders = document.querySelectorAll('#toc .toc-folder');
+      for (var i = 0; i < folders.length; i++) {
+        toggleNode(folders[i], true);
+      }
+    }
+
+    function clicked(node, event) {
+      event.stopPropagation();
+      var li = node;
+      var ul = li.querySelector(':scope > ul');
+      // Подсветка активного раздела
+      document.querySelectorAll('#toc .toc-active').forEach(function(el) { el.classList.remove('toc-active'); });
+      li.classList.add('toc-active');
+      // Раскрытие/свёртывание только непосредственного уровня
+      if (ul) {
+        toggleNode(li, ul.style.display === 'none');
+      }
+      return true;
+    }
+
+    function dblclicked(node) {
+      var li = node.closest('li');
+      var ul = li.querySelector(':scope > ul');
+      if (ul) {
+        toggleNode(li, ul.style.display === 'none');
+      }
+      return false;
+    }
+
+    // Инициализация
+    document.addEventListener('DOMContentLoaded', function() {
+      var state = (typeof initialtocstate !== 'undefined') ? initialtocstate : 'collapseall';
+
+      // Сначала сворачиваем ВСЁ
+      collapseAll();
+
+      // Если expandall — разворачиваем всё
+      if (state === 'expandall') {
+        expandAll();
+      }
+
+      // Уведомляем parent о первой ссылке (для file:// протокола)
+      try {
+        var firstLink = document.querySelector('#toc a[href]');
+        if (firstLink && window.parent && window.parent !== window) {
+          window.parent.postMessage({type: 'tocFirstLink', href: firstLink.getAttribute('href')}, '*');
+        }
+      } catch(e) {}
+    });
+  </script>
+</head>
+<body>
+<ul id="toc" style="list-style-type:none;display:block;padding-left:0">
+<li class="heading1 toc-page" id="i1" onclick="return clicked(this,event)"><a class="heading1" id="a1" href="index.htm" target="hmcontent"><span class="heading1" id="s1">{{FIRST_SECTION}}</span></a>
+</li>
+</ul>
+</body>
+</html>

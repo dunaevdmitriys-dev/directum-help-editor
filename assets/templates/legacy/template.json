@@ -1,0 +1,15 @@
+{
+  "id": "legacy",
+  "name": "Help & Manual (Legacy)",
+  "description": "Совместимость с Help & Manual — оболочка, стили и поиск остаются от H&M. Заменяется только контент и helpCodes.",
+  "shell": [],
+  "styles": [],
+  "scripts": [
+    "helpeditor_init.js"
+  ],
+  "search": {
+    "engine": "helpmanual",
+    "generateIndex": false,
+    "pageInitScript": "helpeditor_init.js"
+  }
+}

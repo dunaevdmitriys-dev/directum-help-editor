@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <title>Поиск по справке</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link type="text/css" href="default.css" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+
+    :root {
+      --rx-navy: #13406d;
+      --rx-orange: #f57c00;
+      --color-text: #2d3748;
+      --color-text-light: #4a5568;
+      --color-text-muted: #718096;
+      --color-link: #0b5faa;
+      --surface-subtle: #f7fafc;
+      --surface-accent: #ebf4ff;
+      --border: #e2e8f0;
+      --font: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    body {
+      font-size: 14px;
+      font-family: var(--font);
+      margin: 0;
+      padding: 0;
+      background: #fff;
+      color: var(--color-text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .search-header {
+      position: sticky;
+      top: 0;
+      background: #fff;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      z-index: 100;
+    }
+
+    .search-form {
+      position: relative;
+      max-width: 100%;
+    }
+
+    .search-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 44px 12px 16px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      font-size: 15px;
+      font-family: inherit;
+      color: var(--color-text);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .search-input:focus {
+      outline: none;
+      border-color: var(--rx-navy);
+      box-shadow: 0 0 0 3px rgba(19, 64, 109, 0.08);
+    }
+
+    .search-icon {
+      position: absolute;
+      right: 14px;
+      color: var(--color-text-muted);
+      pointer-events: none;
+    }
+
+    .search-clear {
+      position: absolute;
+      right: 40px;
+      background: none;
+      border: none;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      padding: 4px;
+      font-size: 18px;
+      display: none;
+    }
+    .search-clear:hover {
+      color: var(--color-text);
+    }
+    .search-input:not(:placeholder-shown) + .search-clear {
+      display: block;
+    }
+
+    /* Автодополнение */
+    .suggestions {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-top: 4px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+      display: none;
+      z-index: 200;
+    }
+    .suggestions.show {
+      display: block;
+    }
+    .suggestion-item {
+      padding: 10px 16px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--surface-subtle);
+      transition: background 0.1s;
+    }
+    .suggestion-item:last-child {
+      border-bottom: none;
+    }
+    .suggestion-item:hover, .suggestion-item.active {
+      background: var(--surface-accent);
+    }
+    .suggestion-term {
+      font-weight: 500;
+    }
+    .suggestion-count {
+      color: var(--color-text-muted);
+      font-size: 12px;
+      margin-left: 8px;
+    }
+
+    /* Контент */
+    .search-content {
+      padding: 24px;
+      max-width: 100%;
+    }
+
+    .search-stats {
+      color: var(--color-text-muted);
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+    .search-stats strong {
+      color: var(--color-text);
+    }
+
+    /* Результаты */
+    .search-results {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .search-result {
+      padding: 16px 20px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+    .search-result:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      background: var(--surface-subtle);
+    }
+
+    .result-title {
+      font-size: 16px;
+      margin: 0 0 6px 0;
+      line-height: 1.4;
+    }
+    .result-title a {
+      color: var(--color-link);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .result-title a:hover {
+      color: var(--rx-orange);
+    }
+
+    .result-breadcrumb {
+      color: var(--color-text-muted);
+      font-size: 12px;
+      margin-bottom: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 2px;
+    }
+    .result-breadcrumb a {
+      color: var(--color-text-muted);
+      text-decoration: none;
+    }
+    .result-breadcrumb a:hover {
+      color: var(--color-link);
+    }
+    .bc-sep {
+      color: #cbd5e1;
+      margin: 0 4px;
+    }
+
+    .result-snippet {
+      color: var(--color-text-light);
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    /* Подсветка */
+    mark {
+      background: #fef3cd;
+      color: inherit;
+      padding: 1px 3px;
+      border-radius: 2px;
+      font-weight: 500;
+    }
+
+    /* Пагинация */
+    .pagination {
+      margin-top: 24px;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .pagination a, .pagination span {
+      min-width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      text-decoration: none;
+      color: var(--color-text);
+      font-size: 14px;
+      transition: all 0.15s;
+    }
+    .pagination a:hover {
+      background: var(--surface-subtle);
+      border-color: #cbd5e1;
+    }
+    .pagination .current {
+      background: var(--rx-navy);
+      color: white;
+      border-color: var(--rx-navy);
+    }
+    .pagination .dots {
+      border: none;
+      color: var(--color-text-muted);
+    }
+
+    /* Состояния */
+    .no-results {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--color-text-muted);
+    }
+    .no-results-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.6;
+    }
+    .no-results h3 {
+      margin: 0 0 8px 0;
+      color: var(--color-text);
+      font-size: 18px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--color-text-muted);
+    }
+    .loading-spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border);
+      border-top-color: var(--rx-navy);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .initial-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--color-text-muted);
+    }
+    .initial-state-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.4;
+    }
+
+    /* Подсказки по поиску */
+    .search-tips {
+      margin-top: 24px;
+      padding: 16px 20px;
+      background: var(--surface-subtle);
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-size: 13px;
+      text-align: left;
+      display: inline-block;
+    }
+    .search-tips h4 {
+      margin: 0 0 8px 0;
+      color: var(--color-text);
+      font-size: 13px;
+    }
+    .search-tips ul {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--color-text-muted);
+    }
+    .search-tips li {
+      margin-bottom: 4px;
+    }
+    .search-tips code {
+      background: var(--border);
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 12px;
+    }
+
+    @media (min-width: 1200px) {
+      .search-content { max-width: 840px; }
+      .search-form { max-width: 640px; }
+    }
+
+    @media (max-width: 768px) {
+      .search-header { padding: 16px; }
+      .search-content { padding: 16px; }
+      .search-result { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="search-header">
+  <form class="search-form" onsubmit="doSearch(); return false;">
+    <div class="search-input-wrapper">
+      <input type="text"
+             id="search-input"
+             class="search-input"
+             placeholder="Введите текст для поиска..."
+             autocomplete="off"
+             autofocus>
+      <button type="button" class="search-clear" id="clear-btn" onclick="clearSearch()">×</button>
+      <span class="search-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="M21 21l-4.35-4.35"/>
+        </svg>
+      </span>
+    </div>
+    <div class="suggestions" id="suggestions"></div>
+  </form>
+</div>
+
+<div class="search-content">
+  <div id="search-stats" class="search-stats"></div>
+  <div id="search-results" class="search-results">
+    <div class="initial-state">
+      <div class="initial-state-icon">🔍</div>
+      <p>Введите запрос для поиска по справке</p>
+      <div class="search-tips">
+        <h4>Советы по поиску:</h4>
+        <ul>
+          <li>Используйте несколько слов для точного поиска</li>
+          <li>Поиск понимает опечатки и разные формы слов</li>
+          <li>Результаты отсортированы по релевантности</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div id="pagination" class="pagination"></div>
+</div>
+
+<script src="search_index.js"></script>
+<script src="search-client.js"></script>
+<script>
+  const searchInput = document.getElementById('search-input');
+  const suggestionsEl = document.getElementById('suggestions');
+  const clearBtn = document.getElementById('clear-btn');
+
+  let searchTimeout = null;
+  let suggestTimeout = null;
+  let currentPage = 1;
+  let currentQuery = '';
+  let selectedSuggestion = -1;
+
+  // Получаем параметры из URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialQuery = urlParams.get('q') || '';
+  const initialPage = parseInt(urlParams.get('page')) || 1;
+
+  if (initialQuery) {
+    searchInput.value = initialQuery;
+    currentQuery = initialQuery;
+    currentPage = initialPage;
+    waitForSearchAndExecute();
+  }
+
+  // Ожидание готовности поиска
+  function waitForSearchAndExecute() {
+    if (HelpSearch.isReady) {
+      doSearch(currentPage);
+    } else {
+      showLoading();
+      setTimeout(waitForSearchAndExecute, 100);
+    }
+  }
+
+  // Обработчики ввода
+  searchInput.addEventListener('input', function() {
+    const query = this.value.trim();
+    currentQuery = query;
+
+    // Показываем/скрываем кнопку очистки
+    clearBtn.style.display = query ? 'block' : 'none';
+
+    // Отложенный поиск
+    clearTimeout(searchTimeout);
+    clearTimeout(suggestTimeout);
+
+    if (query.length >= 2) {
+      // Показываем подсказки быстро
+      suggestTimeout = setTimeout(() => showSuggestions(query), 150);
+      // Полный поиск с задержкой
+      searchTimeout = setTimeout(() => {
+        currentPage = 1;
+        doSearch();
+      }, 300);
+    } else {
+      hideSuggestions();
+      if (query.length === 0) {
+        showInitialState();
+      }
+    }
+  });
+
+  // Навигация по подсказкам
+  searchInput.addEventListener('keydown', function(e) {
+    const items = suggestionsEl.querySelectorAll('.suggestion-item');
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      selectedSuggestion = Math.min(selectedSuggestion + 1, items.length - 1);
+      updateSuggestionSelection(items);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      selectedSuggestion = Math.max(selectedSuggestion - 1, -1);
+      updateSuggestionSelection(items);
+    } else if (e.key === 'Enter' && selectedSuggestion >= 0) {
+      e.preventDefault();
+      const selected = items[selectedSuggestion];
+      if (selected) {
+        searchInput.value = selected.dataset.term;
+        currentQuery = selected.dataset.term;
+        hideSuggestions();
+        currentPage = 1;
+        doSearch();
+      }
+    } else if (e.key === 'Escape') {
+      hideSuggestions();
+    }
+  });
+
+  function updateSuggestionSelection(items) {
+    items.forEach((item, i) => {
+      item.classList.toggle('active', i === selectedSuggestion);
+    });
+  }
+
+  // Скрытие подсказок при клике вне
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.search-form')) {
+      hideSuggestions();
+    }
+  });
+
+  function showSuggestions(query) {
+    if (!HelpSearch.isReady) return;
+
+    const suggestions = HelpSearch.autoSuggest(query);
+    if (suggestions.length === 0) {
+      hideSuggestions();
+      return;
+    }
+
+    selectedSuggestion = -1;
+    let html = '';
+    for (const s of suggestions) {
+      html += '<div class="suggestion-item" data-term="' + escapeAttr(s.suggestion) + '" onclick="selectSuggestion(this)">';
+      html += '<span class="suggestion-term">' + escapeHtml(s.suggestion) + '</span>';
+      html += '<span class="suggestion-count">' + s.score.toFixed(0) + ' совп.</span>';
+      html += '</div>';
+    }
+    suggestionsEl.innerHTML = html;
+    suggestionsEl.classList.add('show');
+  }
+
+  function hideSuggestions() {
+    suggestionsEl.classList.remove('show');
+    selectedSuggestion = -1;
+  }
+
+  function selectSuggestion(el) {
+    searchInput.value = el.dataset.term;
+    currentQuery = el.dataset.term;
+    hideSuggestions();
+    currentPage = 1;
+    doSearch();
+  }
+
+  function clearSearch() {
+    searchInput.value = '';
+    currentQuery = '';
+    clearBtn.style.display = 'none';
+    hideSuggestions();
+    showInitialState();
+    searchInput.focus();
+    updateUrl('', 1);
+  }
+
+  function showInitialState() {
+    document.getElementById('search-stats').innerHTML = '';
+    document.getElementById('search-results').innerHTML = `
+      <div class="initial-state">
+        <div class="initial-state-icon">🔍</div>
+        <p>Введите запрос для поиска по справке</p>
+        <div class="search-tips">
+          <h4>Советы по поиску:</h4>
+          <ul>
+            <li>Используйте несколько слов для точного поиска</li>
+            <li>Поиск понимает опечатки и разные формы слов</li>
+            <li>Результаты отсортированы по релевантности</li>
+          </ul>
+        </div>
+      </div>
+    `;
+    document.getElementById('pagination').innerHTML = '';
+  }
+
+  function showLoading() {
+    document.getElementById('search-stats').innerHTML = '';
+    document.getElementById('search-results').innerHTML = `
+      <div class="loading">
+        <div class="loading-spinner"></div>
+        <p>Загрузка...</p>
+      </div>
+    `;
+    document.getElementById('pagination').innerHTML = '';
+  }
+
+  function doSearch(page) {
+    page = page || currentPage;
+    const query = currentQuery;
+
+    if (!query || query.length < 2) {
+      showInitialState();
+      return;
+    }
+
+    hideSuggestions();
+    updateUrl(query, page);
+
+    if (!HelpSearch.isReady) {
+      showLoading();
+      setTimeout(() => doSearch(page), 200);
+      return;
+    }
+
+    const results = HelpSearch.searchWithSnippets(query);
+    renderResults(results, query, page);
+  }
+
+  function renderResults(results, query, page) {
+    const perPage = 15;
+    const totalPages = Math.ceil(results.length / perPage);
+    const start = (page - 1) * perPage;
+    const end = start + perPage;
+    const pageResults = results.slice(start, end);
+
+    const statsEl = document.getElementById('search-stats');
+    const resultsEl = document.getElementById('search-results');
+
+    if (results.length === 0) {
+      statsEl.innerHTML = '';
+      resultsEl.innerHTML = `
+        <div class="no-results">
+          <div class="no-results-icon">😔</div>
+          <h3>Ничего не найдено</h3>
+          <p>По запросу «${escapeHtml(query)}» результатов нет</p>
+          <div class="search-tips">
+            <h4>Попробуйте:</h4>
+            <ul>
+              <li>Проверить правописание</li>
+              <li>Использовать другие ключевые слова</li>
+              <li>Использовать меньше слов в запросе</li>
+            </ul>
+          </div>
+        </div>
+      `;
+      document.getElementById('pagination').innerHTML = '';
+      return;
+    }
+
+    statsEl.innerHTML = 'Найдено: <strong>' + results.length + '</strong> ' +
+                        pluralize(results.length, 'результат', 'результата', 'результатов');
+
+    let html = '';
+    for (const r of pageResults) {
+      html += '<article class="search-result">';
+      html += '<h3 class="result-title"><a href="' + r.url + '" target="hmcontent">' + r.titleHighlighted + '</a></h3>';
+      if (r.breadcrumb) {
+        html += '<div class="result-breadcrumb">' + r.breadcrumb + '</div>';
+      }
+      if (r.snippet) {
+        html += '<p class="result-snippet">' + r.snippet + '</p>';
+      }
+      html += '</article>';
+    }
+    resultsEl.innerHTML = html;
+
+    // Пагинация
+    renderPagination(page, totalPages);
+  }
+
+  function renderPagination(page, totalPages) {
+    const pagEl = document.getElementById('pagination');
+
+    if (totalPages <= 1) {
+      pagEl.innerHTML = '';
+      return;
+    }
+
+    let html = '';
+
+    // Предыдущая
+    if (page > 1) {
+      html += '<a href="javascript:goToPage(' + (page - 1) + ')">←</a>';
+    }
+
+    // Номера страниц
+    const range = getPageRange(page, totalPages);
+    for (const p of range) {
+      if (p === '...') {
+        html += '<span class="dots">...</span>';
+      } else if (p === page) {
+        html += '<span class="current">' + p + '</span>';
+      } else {
+        html += '<a href="javascript:goToPage(' + p + ')">' + p + '</a>';
+      }
+    }
+
+    // Следующая
+    if (page < totalPages) {
+      html += '<a href="javascript:goToPage(' + (page + 1) + ')">→</a>';
+    }
+
+    pagEl.innerHTML = html;
+  }
+
+  function getPageRange(current, total) {
+    const range = [];
+    const delta = 2;
+
+    range.push(1);
+
+    if (current - delta > 2) {
+      range.push('...');
+    }
+
+    for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) {
+      range.push(i);
+    }
+
+    if (current + delta < total - 1) {
+      range.push('...');
+    }
+
+    if (total > 1) {
+      range.push(total);
+    }
+
+    return range;
+  }
+
+  function goToPage(page) {
+    currentPage = page;
+    doSearch(page);
+    window.scrollTo(0, 0);
+  }
+
+  function updateUrl(query, page) {
+    const params = new URLSearchParams();
+    if (query) params.set('q', query);
+    if (page > 1) params.set('page', page);
+    const newUrl = params.toString() ? '?' + params.toString() : window.location.pathname;
+    history.replaceState(null, '', newUrl);
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function escapeAttr(text) {
+    return text.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function pluralize(n, one, few, many) {
+    const mod10 = n % 10;
+    const mod100 = n % 100;
+    if (mod100 >= 11 && mod100 <= 19) return many;
+    if (mod10 === 1) return one;
+    if (mod10 >= 2 && mod10 <= 4) return few;
+    return many;
+  }
+</script>
+
+</body>
+</html>

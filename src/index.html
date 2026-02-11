@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: file: blob: http://localhost:* https://localhost:*; media-src 'self' file: http://localhost:* https://localhost:*; frame-src 'self' blob:; connect-src 'self' https://cdn.jsdelivr.net http://localhost:* https://localhost:*;">
+  <title>Help Editor</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <!-- TinyMCE (локальный с fallback на CDN) -->
+  <script src="../assets/tinymce/tinymce.min.js" onerror="this.onerror=null; this.src='https://cdn.jsdelivr.net/npm/tinymce@6.8.2/tinymce.min.js';"></script>
+</head>
+<body>
+  <div id="app">
+    <!-- Приветственный экран -->
+    <div id="welcome-screen" class="welcome-screen">
+      <div class="welcome-content">
+        <div class="welcome-logo">
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="white">
+            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M9,13V19H7V13H9M15,15V19H17V15H15M11,11V19H13V11H11Z"/>
+          </svg>
+        </div>
+        <h1>Help Editor</h1>
+        <p>Редактор справочной документации</p>
+        <div class="welcome-buttons">
+          <button id="btn-create-project" class="btn btn-primary btn-large">
+            <span class="icon">&#10133;</span>
+            Создать новый проект
+          </button>
+          <button id="btn-open-folder" class="btn btn-secondary btn-large">
+            <span class="icon">&#128193;</span>
+            Открыть существующий
+          </button>
+        </div>
+        <p class="hint">Создайте новый проект справки или откройте существующий</p>
+      </div>
+    </div>
+
+    <!-- Главное окно редактора -->
+    <div id="editor-screen" class="editor-screen hidden">
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <button id="btn-save" class="toolbar-btn" title="Сохранить (Ctrl+S)">&#128190; Сохранить</button>
+        <button id="btn-save-all" class="toolbar-btn" title="Сохранить всё">&#128190; Сохранить всё</button>
+        <span class="toolbar-separator"></span>
+        <button id="btn-build" class="toolbar-btn toolbar-btn-build" title="Сборка проекта (генерация служебных файлов)">&#9881; Сборка</button>
+        <button id="btn-publish" class="toolbar-btn" title="Опубликовать справку в главную папку">&#128640; Публикация</button>
+        <button id="btn-change-template" class="toolbar-btn" title="Сменить шаблон справки">&#127912; Шаблон</button>
+        <span class="toolbar-separator"></span>
+        <button id="btn-add-section" class="toolbar-btn" title="Добавить раздел">&#10133; Раздел</button>
+        <span class="toolbar-separator"></span>
+        <span id="project-name" class="project-name"></span>
+      </div>
+
+      <div class="main-container">
+        <!-- Левая панель: дерево разделов -->
+        <div class="sidebar" id="sidebar">
+          <div class="sidebar-header">
+            <div class="search-controls">
+              <input type="text" id="search-input" class="search-input" placeholder="Поиск...">
+              <div class="search-mode-toggle">
+                <button id="btn-search-title" class="search-mode-btn active" title="Поиск по названиям разделов">Названия</button>
+                <button id="btn-search-content" class="search-mode-btn" title="Полнотекстовый поиск по содержимому">Содержимое</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Панель результатов поиска -->
+          <div id="search-results-panel" class="search-results-panel hidden">
+            <div class="search-results-header">
+              <span id="search-results-count">Найдено: 0</span>
+              <button id="btn-close-search-results" class="btn-close-search" title="Закрыть">&times;</button>
+            </div>
+            <div id="search-results-list" class="search-results-list"></div>
+          </div>
+
+          <div id="tree-container" class="tree-container"></div>
+        </div>
+
+        <!-- Resizer -->
+        <div class="resizer" id="resizer"></div>
+
+        <!-- Правая панель: редактор -->
+        <div class="editor-panel">
+          <div class="editor-header">
+            <span id="current-section-title" class="section-title">Выберите раздел</span>
+            <div class="view-switcher">
+              <button id="btn-view-editor" class="btn-view active">Редактор</button>
+              <button id="btn-view-code" class="btn-view">HTML</button>
+              <button id="btn-view-preview" class="btn-view">Просмотр</button>
+            </div>
+          </div>
+
+          <div id="editor-container" class="editor-container">
+            <div id="editor-placeholder" class="editor-placeholder">
+              <p>Выберите раздел в дереве слева для редактирования</p>
+            </div>
+            <div id="editor-wrapper" class="editor-wrapper hidden">
+              <textarea id="editor-content"></textarea>
+            </div>
+            <div id="code-editor" class="code-editor hidden">
+              <textarea id="code-content" class="code-textarea"></textarea>
+            </div>
+            <div id="preview-container" class="preview-container hidden">
+              <iframe id="preview-frame" class="preview-frame" sandbox="allow-same-origin allow-scripts allow-popups"></iframe>
+            </div>
+          </div>
+
+          <!-- Панель редактора видео -->
+          <div id="video-editor-panel" class="video-editor-panel hidden">
+            <div class="video-editor-header">
+              <div class="video-editor-title">
+                <button id="btn-toggle-video-panel" class="btn-toggle-panel" title="Свернуть/развернуть">▲</button>
+                <h3>Редактор таймкодов</h3>
+              </div>
+              <div class="video-editor-selector">
+                <label>Видео:</label>
+                <select id="video-selector" class="video-selector"></select>
+              </div>
+            </div>
+            <div id="video-editor-content" class="video-editor-content">
+              <div id="video-info" class="video-info"></div>
+              <div class="timestamps-section">
+                <div class="timestamps-header">
+                  <span>Метки времени</span>
+                  <button id="btn-add-timestamp" class="btn btn-small btn-add">+ Добавить</button>
+                </div>
+                <div id="timestamps-list" class="timestamps-list"></div>
+              </div>
+              <div class="video-editor-footer">
+                <button id="btn-save-video-data" class="btn btn-primary">💾 Сохранить таймкоды</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Статусная строка -->
+      <div class="status-bar">
+        <span id="status-text">Готово</span>
+        <span id="status-file"></span>
+      </div>
+    </div>
+
+    <!-- Контекстное меню -->
+    <div id="context-menu" class="context-menu hidden">
+      <div class="context-menu-item" data-action="section-card">Карточка раздела</div>
+      <div class="context-menu-separator"></div>
+      <div class="context-menu-item" data-action="add-child">Добавить дочерний раздел</div>
+      <div class="context-menu-item" data-action="add-after">Добавить раздел после</div>
+      <div class="context-menu-item" data-action="add-from-file">Добавить раздел из файла...</div>
+      <div class="context-menu-separator"></div>
+      <div class="context-menu-item" data-action="rename">Переименовать</div>
+      <div class="context-menu-separator"></div>
+      <div class="context-menu-item" data-action="add-images">Добавить изображения...</div>
+      <div class="context-menu-item" data-action="manage-css">Файлы стилей (CSS)...</div>
+      <div class="context-menu-separator"></div>
+      <div class="context-menu-item danger" data-action="delete">Удалить</div>
+    </div>
+
+    <!-- Контекстное меню для неиспользуемых страниц -->
+    <div id="orphan-context-menu" class="context-menu hidden">
+      <div class="context-menu-item" data-action="orphan-card">Карточка страницы</div>
+      <div class="context-menu-separator"></div>
+      <div class="context-menu-item" data-action="add-to-root">Добавить в корень дерева</div>
+      <div class="context-menu-separator"></div>
+      <div class="context-menu-item danger" data-action="delete-file">Удалить файл</div>
+    </div>
+
+    <!-- Контекстное меню для неиспользуемых изображений -->
+    <div id="image-context-menu" class="context-menu hidden">
+      <div class="context-menu-item danger" data-action="delete-image">Удалить изображение</div>
+    </div>
+
+    <!-- Модальные окна -->
+
+    <!-- Добавление раздела -->
+    <div id="modal-add-section" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Добавить раздел</h3>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="tabs">
+            <button class="tab-btn active" data-tab="section-new">Новый раздел</button>
+            <button class="tab-btn" data-tab="section-from-file">Из файла</button>
+          </div>
+
+          <div id="section-new" class="tab-content active">
+            <div class="form-group">
+              <label>Название раздела:</label>
+              <input type="text" id="new-section-title" class="form-input" placeholder="Введите название">
+            </div>
+            <div class="form-group">
+              <label>Имя файла (необязательно):</label>
+              <input type="text" id="new-section-filename" class="form-input" placeholder="Автоматически из названия">
+            </div>
+          </div>
+
+          <div id="section-from-file" class="tab-content hidden">
+            <div class="form-group">
+              <label>HTML файл:</label>
+              <div class="input-with-button">
+                <input type="text" id="section-file-path" class="form-input" readonly placeholder="Выберите HTML файл...">
+                <button id="btn-browse-html" class="btn">Обзор...</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Название раздела:</label>
+              <input type="text" id="section-file-title" class="form-input" placeholder="Будет извлечено из файла">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="add-as-child"> Добавить как дочерний раздел
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="btn-add-section-cancel" class="btn">Отмена</button>
+          <button id="btn-add-section-ok" class="btn btn-primary">Добавить</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Переименование -->
+    <div id="modal-rename" class="modal hidden">
+      <div class="modal-content modal-small">
+        <div class="modal-header">
+          <h3>Переименовать раздел</h3>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Новое название:</label>
+            <input type="text" id="rename-title" class="form-input">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="btn-rename-cancel" class="btn">Отмена</button>
+          <button id="btn-rename-ok" class="btn btn-primary">Сохранить</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Вставка изображения -->
+    <div id="modal-image" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Вставка изображения</h3>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Файл изображения:</label>
+            <div class="input-with-button">
+              <input type="text" id="image-path" class="form-input" readonly placeholder="Выберите файл...">
+              <button id="btn-select-image" class="btn">Обзор...</button>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="image-width">Ширина:</label>
+              <input type="number" id="image-width" class="form-input" placeholder="авто">
+            </div>
+            <div class="form-group">
+              <label for="image-height">Высота:</label>
+              <input type="number" id="image-height" class="form-input" placeholder="авто">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="image-alt">Описание изображения:</label>
+            <input type="text" id="image-alt" class="form-input" placeholder="Краткое описание">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="btn-image-cancel" class="btn">Отмена</button>
+          <button id="btn-image-ok" class="btn btn-primary">Вставить</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Вставка ссылки -->
+    <div id="modal-link" class="modal hidden">
+      <div class="modal-content modal-large">
+        <div class="modal-header">
+          <h3>Вставка ссылки</h3>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="tabs">
+            <button class="tab-btn active" data-tab="link-internal">Раздел справки</button>
+            <button class="tab-btn" data-tab="link-external">Внешняя ссылка</button>
+          </div>
+          <div id="link-internal" class="tab-content active">
+            <div class="form-group">
+              <label>Поиск раздела:</label>
+              <input type="text" id="link-search" class="form-input" placeholder="Начните вводить название...">
+            </div>
+            <div class="form-group">
+              <label>Выберите раздел:</label>
+              <div id="link-tree-container" class="link-tree-container"></div>
+            </div>
+          </div>
+          <div id="link-external" class="tab-content hidden">
+            <div class="form-group">
+              <label>URL:</label>
+              <input type="text" id="link-url" class="form-input" placeholder="https://...">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Текст ссылки:</label>
+            <input type="text" id="link-text" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="link-new-window"> Открывать в новом окне
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="btn-link-cancel" class="btn">Отмена</button>
+          <button id="btn-link-ok" class="btn btn-primary">Вставить</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Вставка таблицы -->
+    <div id="modal-table" class="modal hidden">
+      <div class="modal-content modal-small">
+        <div class="modal-header">
+          <h3>Вставка таблицы</h3>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Строк:</label>
+              <input type="number" id="table-rows" class="form-input" value="3" min="1">
+            </div>
+            <div class="form-group">
+              <label>Столбцов:</label>
+              <input type="number" id="table-cols" class="form-input" value="3" min="1">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="table-header" checked> Заголовок
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="btn-table-cancel" class="btn">Отмена</button>
+          <button id="btn-table-ok" class="btn btn-primary">Вставить</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Вставка видео -->
+    <div id="modal-video" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Вставка видео</h3>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="tabs">
+            <button class="tab-btn active" data-tab="video-file">Локальный файл</button>
+            <button class="tab-btn" data-tab="video-embed">YouTube / Vimeo</button>
+          </div>
+
+          <div id="video-file" class="tab-content active">
+            <div class="form-group">
+              <label>Видеофайл:</label>
+              <div class="input-with-button">
+                <input type="text" id="video-path" class="form-input" readonly placeholder="Выберите файл...">
+                <button id="btn-select-video" class="btn">Обзор...</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="video-embed" class="tab-content hidden">
+            <div class="form-group">
+              <label>URL видео:</label>
+              <input type="text" id="video-url" class="form-input" placeholder="https://www.youtube.com/watch?v=...">
+              <small class="form-hint">Поддерживаются YouTube и Vimeo</small>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Ширина:</label>
+              <input type="number" id="video-width" class="form-input" value="640">
+            </div>
+            <div class="form-group">
+              <label>Высота:</label>
+              <input type="number" id="video-height" class="form-input" value="360">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="btn-video-cancel" class="btn">Отмена</button>
+          <button id="btn-video-ok" class="btn btn-primary">Вставить</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Управление CSS файлами раздела -->
+    <div id="modal-css" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Файлы стилей (CSS)</h3>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Текущие CSS файлы раздела:</label>
+            <div id="css-files-list" class="css-files-list"></div>
+          </div>
+          <div class="form-group">
+            <label>Добавить CSS файл:</label>
+            <div class="input-with-button">
+              <select id="css-file-select" class="form-input">
+                <option value="">Выберите файл из проекта...</option>
+              </select>
+              <button id="btn-add-css-from-project" class="btn">Добавить</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="input-with-button">
+              <input type="text" id="css-new-file" class="form-input" readonly placeholder="Или выберите внешний файл...">
+              <button id="btn-select-css-file" class="btn">Обзор...</button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="btn-css-cancel" class="btn">Отмена</button>
+          <button id="btn-css-ok" class="btn btn-primary">Сохранить</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Карточка раздела -->
+    <div id="modal-section-card" class="modal hidden">
+      <div class="modal-content modal-large">
+        <div class="modal-header">
+          <h3 id="section-card-header">Карточка раздела</h3>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <!-- Название -->
+          <div class="form-group">
+            <label>Название раздела:</label>
+            <input type="text" id="section-card-title" class="form-input">
+          </div>
+          <!-- Файл -->
+          <div class="form-group">
+            <label>Файл:</label>
+            <div class="section-card-filename" id="section-card-filename"></div>
+          </div>
+          <!-- Контекстный код -->
+          <div class="form-group">
+            <label>Код контекстной справки:</label>
+            <div class="context-code-row">
+              <code id="section-card-context-code" class="context-code"></code>
+              <button id="btn-copy-context-code" class="btn btn-small" title="Копировать код">Копировать</button>
+            </div>
+            <div class="form-hint">Этот код используется для вызова справки из Directum RX (F1)</div>
+          </div>
+          <!-- Изображения -->
+          <div class="form-group">
+            <label>Изображения:</label>
+            <div id="section-card-images" class="section-card-list"></div>
+            <button id="btn-card-add-images" class="btn btn-small">Добавить изображения...</button>
+          </div>
+          <!-- CSS файлы -->
+          <div class="form-group">
+            <label>Файлы стилей (CSS):</label>
+            <div id="section-card-css" class="section-card-list"></div>
+            <div class="input-with-button">
+              <select id="card-css-select" class="form-input">
+                <option value="">Из проекта...</option>
+              </select>
+              <button id="btn-card-add-css" class="btn btn-small">Добавить</button>
+            </div>
+            <div class="input-with-button" style="margin-top:4px">
+              <input type="text" id="card-css-external" class="form-input" readonly placeholder="Внешний CSS...">
+              <button id="btn-card-browse-css" class="btn btn-small">Обзор...</button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="btn-card-cancel" class="btn">Отмена</button>
+          <button id="btn-card-ok" class="btn btn-primary">Сохранить</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Создание нового проекта -->
+    <div id="modal-create-project" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Создать проект справки</h3>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Название справки:</label>
+            <input type="text" id="project-title" class="form-input" placeholder="Например: Справка Directum RX">
+          </div>
+          <div class="form-group">
+            <label>Версия (необязательно):</label>
+            <input type="text" id="project-version" class="form-input" placeholder="Например: 25.2">
+          </div>
+          <div class="form-group">
+            <label>Название первого раздела:</label>
+            <input type="text" id="first-section-title" class="form-input" value="Введение" placeholder="Введение">
+          </div>
+          <div class="form-group">
+            <label>Шаблон справки:</label>
+            <select id="project-template" class="form-input">
+              <option value="modern">Современный (новая оболочка, MiniSearch)</option>
+              <option value="legacy">Help &amp; Manual (Legacy)</option>
+            </select>
+            <small class="form-hint" id="project-template-hint"></small>
+          </div>
+          <div class="form-group">
+            <label>Папка проекта:</label>
+            <div class="input-with-button">
+              <input type="text" id="project-folder-path" class="form-input" readonly placeholder="Выберите папку...">
+              <button id="btn-select-project-folder" class="btn">Обзор...</button>
+            </div>
+            <small class="form-hint">Выберите пустую папку или создайте новую</small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="btn-create-project-cancel" class="btn">Отмена</button>
+          <button id="btn-create-project-ok" class="btn btn-primary">Создать</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Модальное окно прогресса сборки -->
+    <div id="modal-build-progress" class="modal hidden">
+      <div class="modal-content modal-small">
+        <div class="modal-header">
+          <h3>Сборка проекта</h3>
+        </div>
+        <div class="modal-body" style="text-align: center; padding: 30px;">
+          <div class="build-spinner"></div>
+          <p id="build-status" style="margin-top: 15px; color: #666;">Подготовка...</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Скрипты - модульная архитектура -->
+  <!-- FileService (абстракция для Electron/Web) -->
+  <script src="js/services/file-service.js"></script>
+
+  <!-- Core -->
+  <script src="js/core/state.js"></script>
+  <script src="js/core/events.js"></script>
+
+  <!-- Modules (порядок важен из-за зависимостей) -->
+  <script src="js/modules/toc-parser.js"></script>
+  <script src="js/modules/generators.js"></script>
+  <script src="js/modules/orphan-detector.js"></script>
+  <script src="js/modules/status-bar.js"></script>
+  <script src="js/modules/view-switcher.js"></script>
+  <script src="js/modules/preview.js"></script>
+  <script src="js/modules/code-editor.js"></script>
+  <script src="js/modules/editor.js"></script>
+  <script src="js/modules/tree-view.js"></script>
+  <script src="js/modules/context-menus.js"></script>
+  <script src="js/modules/dialogs.js"></script>
+  <script src="js/modules/video-editor.js"></script>
+
+  <!-- FlexSearch для полнотекстового поиска -->
+  <script src="../assets/flexsearch/flexsearch.bundle.min.js"></script>
+  <script src="js/modules/search.js"></script>
+
+  <!-- Main App (должен загружаться последним) -->
+  <script src="js/modules/app.js"></script>
+</body>
+</html>

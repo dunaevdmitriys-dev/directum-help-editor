@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# TinyMCE (скачивается автоматически)
+assets/tinymce/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Backups
+*.backup
+*.bak
+
+# IDE
+.idea/
+.vscode/
+.windsurf/
+*.swp
+*.swo
+
+# AI agents
+.agents/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temp
+tmp/
+*.tmp
