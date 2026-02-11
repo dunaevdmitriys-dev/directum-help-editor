@@ -306,6 +306,7 @@ const TreeView = {
         <div class="orphan-section-header">
           <span class="orphan-section-toggle">${toggleIcon}</span>
           <span class="orphan-section-title">${this.escapeHtml(`Неиспользуемые страницы (${orphanPages.length})`)}</span>
+          <button class="btn-adopt-all" id="btn-adopt-all-orphans" title="Добавить все страницы в оглавление">+ Все в дерево</button>
         </div>
         <div class="orphan-section-items ${collapsedClass}">
     `;
@@ -336,9 +337,19 @@ const TreeView = {
    * Привязка обработчиков для секций сирот
    */
   attachOrphanEventListeners() {
+    // Кнопка «Добавить все в дерево»
+    const adoptAllBtn = document.getElementById('btn-adopt-all-orphans');
+    if (adoptAllBtn) {
+      adoptAllBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        App.adoptAllOrphanPages();
+      });
+    }
+
     // Разворачивание / сворачивание секций
     this.container.querySelectorAll('.orphan-section-header').forEach(header => {
-      header.addEventListener('click', () => {
+      header.addEventListener('click', (e) => {
+        if (e.target.closest('.btn-adopt-all')) return;
         const section = header.closest('.orphan-section');
         const sectionId = section.dataset.section;
         const items = section.querySelector('.orphan-section-items');

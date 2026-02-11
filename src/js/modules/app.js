@@ -869,6 +869,63 @@ ${content}
   },
 
   /**
+   * Добавить ВСЕ неиспользуемые страницы в корень дерева
+   */
+  async adoptAllOrphanPages() {
+    if (!AppState.orphanPages || AppState.orphanPages.length === 0) return;
+
+    const total = AppState.orphanPages.length;
+    const progressModal = document.getElementById('modal-build-progress');
+    const statusEl = document.getElementById('build-status');
+    if (progressModal) progressModal.classList.remove('hidden');
+
+    const updateStatus = (text) => {
+      if (statusEl) statusEl.textContent = text;
+    };
+
+    updateStatus(`Добавление страниц: 0 / ${total}...`);
+
+    // Копируем список, т.к. он будет меняться
+    const pages = [...AppState.orphanPages];
+    let added = 0;
+
+    for (const page of pages) {
+      const newNode = {
+        level: 1,
+        url: page.filename,
+        text: page.title || page.filename.replace(/\.htm$/i, '')
+      };
+
+      TocParser.addNode(AppState.tocData, null, newNode);
+      added++;
+
+      if (added % 100 === 0 || added === total) {
+        updateStatus(`Добавление страниц: ${added} / ${total}...`);
+        // Даём UI обновиться
+        await new Promise(r => setTimeout(r, 0));
+      }
+    }
+
+    AppState.modifiedFiles.add('toc');
+
+    updateStatus('Обновление дерева...');
+    await new Promise(r => setTimeout(r, 0));
+
+    await OrphanDetector.scan();
+    TreeView.render(AppState.tocData);
+
+    if (progressModal) progressModal.classList.add('hidden');
+
+    if (typeof window.api !== 'undefined' && window.api.showMessage) {
+      await window.api.showMessage(
+        `Добавлено ${added} страниц в оглавление.\nТеперь нажмите «Сборка» чтобы сгенерировать служебные файлы.`,
+        'info',
+        'Готово'
+      );
+    }
+  },
+
+  /**
    * Предпросмотр файла-сироты
    * @param {string} filename - Имя файла
    */
