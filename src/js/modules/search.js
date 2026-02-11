@@ -107,7 +107,7 @@ const Search = {
           ([stem, docIds]) => [stem, Array.from(docIds)]
         )
       };
-      await window.api.writeFile('.helpeditor_cache.json', JSON.stringify(cache));
+      // Кеш хранится только в памяти, не пишем в папку проекта
     } catch (e) {
       console.warn('Failed to save search cache:', e);
     }

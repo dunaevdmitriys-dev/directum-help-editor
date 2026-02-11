@@ -180,13 +180,6 @@ const App = {
 
       const tocResult = await window.api.readFile('hmcontent.htm');
       if (tocResult.success) {
-        // Автобэкап оригинального hmcontent.htm
-        try {
-          await window.api.writeFile('hmcontent.htm.backup', tocResult.content);
-        } catch (e) {
-          console.warn('Could not create hmcontent.htm backup:', e);
-        }
-
         AppState.originalHmContent = tocResult.content;
         AppState.tocData = TocParser.parseHtml(tocResult.content);
         TreeView.render(AppState.tocData);
@@ -489,11 +482,9 @@ ${content}
   async saveAll() {
     await this.saveCurrentContent();
 
-    if (AppState.tocData && AppState.originalHmContent) {
-      const hmContent = TocParser.generateHtml(AppState.tocData, AppState.originalHmContent);
-      await window.api.writeFile('hmcontent.htm', hmContent);
-      AppState.originalHmContent = hmContent;
-    }
+    // hmcontent.htm НЕ пишем в исходную папку проекта.
+    // Изменения дерева хранятся в памяти (AppState.tocData)
+    // и записываются только при Сборке/Публикации в выходную папку.
 
     AppState.modifiedFiles.clear();
     AppState.hasUnsavedChanges = false;
