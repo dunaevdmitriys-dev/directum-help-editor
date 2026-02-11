@@ -24,7 +24,7 @@ echo.
 if not exist "node_modules" (
     echo Installing dependencies, please wait...
     echo.
-    call npm install
+    call npm install --omit=dev
     if %ERRORLEVEL% neq 0 (
         echo.
         echo [ERROR] npm install failed.
