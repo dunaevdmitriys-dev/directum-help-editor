@@ -13,8 +13,7 @@
     "build": "electron-builder",
     "build:win": "electron-builder --win",
     "build:mac": "electron-builder --mac",
-    "download-tinymce": "node scripts/download-tinymce.js",
-    "postinstall": "node scripts/download-tinymce.js"
+    "download-tinymce": "node scripts/download-tinymce.js"
   },
   "author": "",
   "license": "MIT",

@@ -4,8 +4,7 @@ node_modules/
 # Build output
 dist/
 
-# TinyMCE (скачивается автоматически)
-assets/tinymce/
+# TinyMCE included in repo (no download needed)
 
 # OS files
 .DS_Store
