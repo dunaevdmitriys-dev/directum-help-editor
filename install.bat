@@ -1,49 +1,42 @@
 @echo off
-chcp 65001 >nul 2>&1
-title Help Editor - Установка
+title Help Editor - Install
 
 echo ============================================
-echo         Help Editor - Установка
+echo       Help Editor - Install
 echo ============================================
 echo.
 
-:: Проверяем Node.js
 where node >nul 2>&1
 if %ERRORLEVEL% neq 0 (
-    echo [ОШИБКА] Node.js не найден!
+    echo [ERROR] Node.js not found!
     echo.
-    echo Скачайте и установите Node.js с сайта:
-    echo https://nodejs.org/
-    echo.
-    echo После установки перезапустите этот файл.
+    echo Download Node.js LTS from https://nodejs.org/
+    echo Install it, then RESTART your computer.
     echo.
     pause
     exit /b 1
 )
 
-:: Показываем версию
-for /f "tokens=*" %%i in ('node -v') do set NODE_VER=%%i
-echo Node.js: %NODE_VER%
+for /f "tokens=*" %%i in ('node -v') do echo Node.js: %%i
 echo.
 
-:: Устанавливаем зависимости
-echo Установка зависимостей (npm install)...
-echo Это может занять 1-2 минуты...
+echo Installing dependencies (npm install)...
+echo This may take 1-2 minutes...
 echo.
 call npm install
 if %ERRORLEVEL% neq 0 (
     echo.
-    echo [ОШИБКА] Не удалось установить зависимости.
-    echo Проверьте подключение к интернету.
+    echo [ERROR] npm install failed.
+    echo Check your internet connection.
     pause
     exit /b 1
 )
 
 echo.
 echo ============================================
-echo    Установка завершена успешно!
+echo    Install complete!
 echo ============================================
 echo.
-echo Для запуска используйте файл: start.bat
+echo To start: run start.bat
 echo.
 pause
